@@ -6,7 +6,7 @@ from .GamesSettings import HokmSettings
 class Player:
 	def __init__(self, **params):
 		'''Players in card games
-	
+
 		This class makes a payer's mind and provide
 		methods for his/her actions
 		name: name of player for recognition
@@ -18,6 +18,9 @@ class Player:
 		self.game_settings = params.pop("settings")
 		self.model = params.pop('model', None)
 		self.deck = params.pop('deck')
+		self.STATE = params.pop('STATE', None)
+		self.scores = params.pop('scores', 0)
+		self.rewards = {}
 
 		self.refresh()
 
@@ -45,7 +48,7 @@ class Player:
 
 	def set_scores(self, scores):
 		'''Set everyones score in the game
-	
+
 		scores could be different for different games
 		'''
 		self.scores = scores
@@ -66,7 +69,7 @@ class Player:
 
 	def play(self):
 		'''Play a card by the player'''
-		raise NotImplementedError ("play is not implemented for your game")
+		#raise NotImplementedError ("play is not implemented for your game")
 
 	def get_hand(self):
 		'''Get the hand length and cards in hand'''
