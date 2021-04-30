@@ -6,7 +6,6 @@ settings
 '''
 class HokmSettings:
     n_players=4
-    N_PLAYERS = n_players
     # States for feature transformation and logging
     UNKNOWN = 'unk'
     IN_HAND = 'inh'
@@ -28,5 +27,4 @@ class HokmSettings:
                   UNKNOWN]
     n_for_hokm=5
     n_each_hand=13
-    N_CARDS=0
     SCORE_TO_WIN=7

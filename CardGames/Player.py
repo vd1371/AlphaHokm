@@ -43,6 +43,8 @@ class Player:
 			for i in range(self.deck.n_card_types):
 				self.memory_cards_state[card_type + str(i + 2)] = self.game_settings.UNKNOWN
 
+		self.my_score = 0
+		self.other_score = 0
 		self.memory = {}
 		self.hand = []
 
@@ -53,11 +55,6 @@ class Player:
 		'''
 		self.scores = scores
 
-	def update_cards_state(self, cards, new_states):
-		'''To update the player memory of cards state'''
-		for card, state in zip (cards, new_states):
-			self.memory_cards_state[card] = state
-
 	def add_cards_to_hand(self, new_hand):
 		'''Adding new received cards to hand'''
 		self.hand += new_hand
@@ -67,9 +64,9 @@ class Player:
 		'''Remembring the state_action_reward of all rounds'''
 		self.memory[round_] = s_a_r
 
-	def play(self):
+	def play_card(self):
 		'''Play a card by the player'''
-		#raise NotImplementedError ("play is not implemented for your game")
+		raise NotImplementedError ("play is not implemented for your game")
 
 	def get_hand(self):
 		'''Get the hand length and cards in hand'''

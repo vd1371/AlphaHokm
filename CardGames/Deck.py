@@ -55,4 +55,14 @@ class Deck:
 	def empty(self):
 		return len(self.all_cards) == 0
 
+	def remove_cards(self, **kwargs):
+		''' This method gets parameters as a list, tuple, or dictionery
+		and removes those cards from the deck
+		This method can be used in MCTS
+
+		##TODO: complete this method accordingly
+		'''
+		raise NotImplementedError ("remove_cards method in the Deck module is not implemented yet")
+
+
 

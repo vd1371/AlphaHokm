@@ -7,12 +7,15 @@ class Logger(object):
     
     instance = None
 
-    def __init__(self, logger_name='Logger', address='',
-                 level=logging.WARNING,
-                 console_level=logging.ERROR,
+    def __init__(self,
+                 logger_name='Logger',
+                 address="./Log.log",
+                 level=logging.DEBUG,
+                 console_level=logging.CRITICAL,
                  file_level=logging.DEBUG,
                  mode='w'):
         super(Logger, self).__init__()
+        
         if not Logger.instance:
             logging.basicConfig()
             
