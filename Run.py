@@ -14,10 +14,10 @@ def test():
     while (p0_total < 7) and (p1_total < 7):
         deck = Deck()
 
-        p0 = HokmPlayer(name='Alex', deck=deck, settings=HokmSettings, strategy='random')
-        p1 = HokmPlayer(name='Ryan', deck=deck, settings=HokmSettings, strategy='MCTS')
-        p2 = HokmPlayer(name='Jimmy', deck=deck, settings=HokmSettings, strategy='random')
-        p3 = HokmPlayer(name='Mathew', deck=deck, settings=HokmSettings, strategy='MCTS')
+        p0 = HokmPlayer(name='Alex', deck=deck, settings=HokmSettings, strategy='random', logger = logger)
+        p1 = HokmPlayer(name='Ryan', deck=deck, settings=HokmSettings, strategy='MCTS', logger = logger)
+        p2 = HokmPlayer(name='Jimmy', deck=deck, settings=HokmSettings, strategy='random', logger = logger)
+        p3 = HokmPlayer(name='Mathew', deck=deck, settings=HokmSettings, strategy='MCTS', logger = logger)
 
         hokm_table = HokmTable(p0, p1, p2, p3,
                                deck=deck,

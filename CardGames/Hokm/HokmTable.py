@@ -1,5 +1,6 @@
 # Loading dependencies
 import numpy as np
+from ..Deck import Deck
 from ..GamesSettings import HokmSettings
 from .HokmPlayer import HokmPlayer
 
@@ -14,7 +15,7 @@ class HokmTable:
         """
         self.players = players
         self.deck = params.pop('deck')
-        self.hakem = params.pop('hakem')
+        self.hakem = params.pop('hakem', 0)
         self.settings = params.pop('settings')
         self.logger = params.pop('logger', None)
 
@@ -131,7 +132,7 @@ class HokmTable:
             new_states = bys[pointer:] + bys[:pointer]
             player.update_cards_state(new_set, new_states)
 
-            self.logger.info(f'player.memory_cards_state: {player.memory_cards_state}')
+            self.logger.info(f'{player.name} knowledge: {player.memory_cards_state}')
 
 
 
@@ -178,9 +179,9 @@ class HokmTable:
             if i > 0:
                 self.players[turn].update_cards_state(table, card_states_on_table(table))
             # getting the state of the player before playing the game
-            round_s_a_r[turn]['state'] = self.players[turn].to_dict()
+            round_s_a_r[turn]['state'] = self.players[turn].memory_to_dict()
 
-            action, is_finished = self.players[turn].play_card(table)
+            action, is_finished = self.players[turn].play_card(table, mcts_model = HokmMCTS)
             # when a player runs out of a card
             if is_finished:
                 self._update_finished_card_knowledge(turn, table[0].type)
@@ -241,3 +242,70 @@ def card_states_on_table(table):
     """
     return [HokmSettings.TABLE_BY_1, HokmSettings.TABLE_BY_2, HokmSettings.TABLE_BY_3][-len(table):] if len(
         table) > 0 else []
+
+
+def HokmMCTS(memory, hand, possible_cards, n_mcts_sims = 1):
+    ''' Monte Carlo Tree Search for Hokm
+    
+    ##TODO: Complete this code
+    '''
+
+    probabilities = np.zeros(len(possible_cards))
+
+    print (memory)
+    input()
+
+    for j in range(n_mcts_sims):
+
+        # Create a deck
+        deck = Deck()
+
+        to_be_removed = []
+        for card in deck.all_cards:
+
+            if memory[card.type + str(card.number)] != 'unk':
+                to_be_removed.append(card)
+
+        # only keep the unknown cards from the memroy in the deck and remove the rest of them
+        deck.remove_cards(to_be_removed)
+
+        # instantiate the players with the deck and make them all play randomly (strategy = "random")
+        p0 = HokmPlayer(name='AlexRandom', deck=deck, settings=HokmSettings, strategy='random')
+        p1 = HokmPlayer(name='RyanRandom', deck=deck, settings=HokmSettings, strategy='random')
+        p2 = HokmPlayer(name='JimmyRandom', deck=deck, settings=HokmSettings, strategy='random')
+        p3 = HokmPlayer(name='MathewRandom', deck=deck, settings=HokmSettings, strategy='random')
+
+        # instantiate a new hokm table
+        hokm_table = HokmTable(p0, p1, p2, p3,
+                               deck=deck,
+                               settings=HokmSettings)
+
+        # set the hokm from memory to the new table
+
+
+        # add the on_table cards on the table
+
+        # update the turn
+
+        # update the table
+
+        # update anything else you think is necessary, like players' scores
+
+        # play that specific round the player is about to decide
+
+        # randomly select a card from possible_cards
+        # selected_card = np.random.choice(possible_cards)
+        # idx = possible_cards.index(selected_card)
+
+        # then similar to what happend in run.py
+
+        # while not hokm_table.game_over():
+
+            # play rounds
+
+        # if the player is winner, then add 1 to the probabilities
+        # probabilities[idx] += 1
+
+    # find the card with highest probability of winning and return it
+
+    return np.random.choice(possible_cards)

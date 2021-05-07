@@ -3,7 +3,6 @@
 
 import numpy as np
 from ..Player import Player
-from .HokmMCTS import HokmMCTS
 
 
 class HokmPlayer(Player):
@@ -15,13 +14,14 @@ class HokmPlayer(Player):
         Hokm player inherits from the player with a few more methods and attributes 
         '''
         self.strategy = params.pop("strategy", 'random')
+        self.logger = params.pop("logger", None)
 
 
     def set_hokm(self, val):
         '''Set the hokm to players mind'''
         self.hokm = val
 
-    def to_dict(self):
+    def memory_to_dict(self):
         out_dict = {}
         out_dict['hokm'] = self.hokm
         out_dict['my_score'] = self.my_score / (int(self.deck.n_cards / 8) + 1)
@@ -39,6 +39,9 @@ class HokmPlayer(Player):
 
     def set_other_score(self, n_remaining_cards):
         self.other_score = int(self.deck.n_cards / 4) - n_remaining_cards - self.my_score
+
+    def remember_hakem(self, hakem):
+        self.memory_of_hakem = hakem
 
     def update_finished_cards_state(self, player_number, card_type):
         '''To update the player memory of finished cards in other players hand'''
@@ -69,17 +72,18 @@ class HokmPlayer(Player):
     def empty_hand(self):
         return len(self.hand) == 0
 
-    def play_card(self, on_table):
+    def play_card(self, on_table, mcts_model = None):
 
         possible_cards, is_finished = possible_actions(self.hand, on_table, self.hokm)
-        # self.logger.info(f'possible_cards: {possible_cards}');
-        print(f'possible_cards: {possible_cards}');
+        self.logger.info(f'{self.name}: possible_cards: {possible_cards}');
+        # print(f'possible_cards: {possible_cards}');
 
         if self.strategy == 'random':
             selected_card = np.random.choice(possible_cards)
 
         elif self.strategy == 'MCTS':
-            selected_card = HokmMCTS(self.memory, self.hand, possible_cards)
+            print ("HERE1---->", len(self.hand))
+            selected_card = mcts_model(self.memory_to_dict(), self.hand, possible_cards)
 
         elif self.strategy == 'DQN':
             raise NotImplementedError("DQN is not implemented yet")
