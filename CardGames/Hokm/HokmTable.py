@@ -3,6 +3,7 @@ import numpy as np
 from ..Deck import Deck
 from ..GamesSettings import HokmSettings
 from .HokmPlayer import HokmPlayer
+from CardGames.utils import Logger
 
 
 class HokmTable:
@@ -16,6 +17,8 @@ class HokmTable:
         self.players = players
         self.deck = params.pop('deck')
         self.hakem = params.pop('hakem', 0)
+        self.hokm = params.pop('hokm', 'H')
+        self.turn = params.pop('turn', 0)
         self.settings = params.pop('settings')
         self.logger = params.pop('logger', None)
 
@@ -48,7 +51,6 @@ class HokmTable:
         while not self.deck.empty():
             if self.players[next_player].empty_hand():
                 tmp_cards = self.deck.draw_cards(self.settings.n_for_hokm)
-
             else:
                 tmp_cards = self.deck.draw_cards(self.settings.n_each_hand - self.settings.n_for_hokm)
 
@@ -56,8 +58,22 @@ class HokmTable:
             next_player = (next_player + 1) % self.settings.n_players
         # self.logger.info(f'{tmp_cards} are added to player {next_player} hand')
 
-
         return initial_hand, self.hokm
+
+    def mcts_initialize(self, hand):
+        self.players[self.turn].add_cards_to_hand(hand)
+        self._update_hokm_knowledge(self.hokm)  # new knowledge
+        # Finding next player index
+        next_player = (self.turn + 1) % self.settings.n_players
+        while not next_player == self.turn:
+            if (next_player < self.turn):
+                tmp_cards = self.deck.draw_cards(len(hand) - 1)
+            else:
+                tmp_cards = self.deck.draw_cards(len(hand))
+            self.players[next_player].add_cards_to_hand(tmp_cards)
+            next_player = (next_player + 1) % self.settings.n_players
+        # self.logger.info(f'{tmp_cards} are added to player {next_player} hand')
+        return
 
     def _analyze_round(self, table_cards):
         '''Who won this round?
@@ -134,8 +150,6 @@ class HokmTable:
 
             self.logger.info(f'{player.name} knowledge: {player.memory_cards_state}')
 
-
-
     def _update_finished_card_knowledge(self, player_number, card_type):
         '''
         e.g. player #1 has finished the H
@@ -181,7 +195,7 @@ class HokmTable:
             # getting the state of the player before playing the game
             round_s_a_r[turn]['state'] = self.players[turn].memory_to_dict()
 
-            action, is_finished = self.players[turn].play_card(table, mcts_model = HokmMCTS)
+            action, is_finished = self.players[turn].play_card(table, mcts_model=HokmMCTS)
             # when a player runs out of a card
             if is_finished:
                 self._update_finished_card_knowledge(turn, table[0].type)
@@ -232,6 +246,70 @@ class HokmTable:
         else:
             return True
 
+    def mcts_play_one_round(self, on_table, idx, n_round=1):
+        # initialize meta state action rewards dict
+        round_s_a_r = {}
+        for i in range(self.settings.n_players):
+            round_s_a_r[i] = {}
+        table = []
+        # add the on_table cards on the table
+        for card in on_table:
+            table.append(card)
+
+        played_cards = {}  # key: player, value: card
+        # played_cards = {}  # key: player, value: card
+        i = self.hakem
+        for card in table:
+            played_cards[card] = (i, i % self.settings.n_players)
+            i = i + 1
+        # key: card, value( i = the i th played card, turn = by global player number)
+
+        # self.logger.info(f'Episode:{self.episode}. It is {self.turn} turn to start the round {n_round}')
+        for i in range(self.settings.n_players - len(table)):
+            turn = (self.turn + i) % self.settings.n_players
+            self.logger.info(f'Table: {table}')
+            self.logger.info(self.players[turn].get_hand())
+            # update the player's knowledge based on the cards on the table
+            if i > 0:
+                self.players[turn].update_cards_state(table, card_states_on_table(table))
+            # getting the state of the player before playing the game
+            round_s_a_r[turn]['state'] = self.players[turn].memory_to_dict()
+
+            if (self.turn == turn):
+                action = self.players[turn].hand[idx]
+                is_finished = False
+            else:
+                action, is_finished = self.players[turn].play_card(table, mcts_model=HokmMCTS)
+
+            # when a player runs out of a card
+            if is_finished:
+                self._update_finished_card_knowledge(turn, table[0].type)
+            # getting the action of the player
+            round_s_a_r[turn][i] = action
+            # logging the action
+            # self.logger.info(f'Player {turn} action is: {action} is_finish: {is_finished}')
+            # self.logger.info(f'It is {self.turn} turn to start the round {n_round}')
+
+            # updating the table
+            table.append(action)
+            played_cards[action] = (
+                i, turn)  # key: card, value( i = the i th played card, turn = by global player number)
+
+            self.logger.info(f'------------------------------------------------')
+
+        # updating the knowledge of player of played cards
+        self._update_played_card_knowledge(played_cards)
+
+        round_winner, rewards = self._analyze_round(played_cards)
+
+        for i in range(self.settings.n_players):
+            # reward[i][1] this is True of False, whether he has won or not
+            self.players[i].update_score(rewards[i][1])
+            round_s_a_r[i]['reward'] = rewards[i][0]
+
+        self._update_players_memory(round_s_a_r, n_round)
+        return (self.turn == round_winner)
+
 
 def card_states_on_table(table):
     """
@@ -244,16 +322,17 @@ def card_states_on_table(table):
         table) > 0 else []
 
 
-def HokmMCTS(memory, hand, possible_cards, n_mcts_sims = 1):
+def HokmMCTS(memory, hand, on_table, possible_cards, n_mcts_sims=10):
+    # n_mcts_sims -> the number of play to decide but select card randomly
     ''' Monte Carlo Tree Search for Hokm
-    
+
     ##TODO: Complete this code
     '''
-
+    logger = Logger()
     probabilities = np.zeros(len(possible_cards))
 
-    print (memory)
-    input()
+    print(memory)
+    # input()
 
     for j in range(n_mcts_sims):
 
@@ -261,13 +340,22 @@ def HokmMCTS(memory, hand, possible_cards, n_mcts_sims = 1):
         deck = Deck()
 
         to_be_removed = []
+        tblcnt = 0
         for card in deck.all_cards:
 
             if memory[card.type + str(card.number)] != 'unk':
                 to_be_removed.append(card)
+            if memory[card.type + str(card.number)].find("tb") >= 0:
+                tblcnt = tblcnt + 1;
+
+            # update the turn
+            turn = tblcnt % 4;
 
         # only keep the unknown cards from the memroy in the deck and remove the rest of them
         deck.remove_cards(to_be_removed)
+        # randomly select a card from possible_cards
+        selected_card = np.random.choice(possible_cards)
+        idx = possible_cards.index(selected_card)
 
         # instantiate the players with the deck and make them all play randomly (strategy = "random")
         p0 = HokmPlayer(name='AlexRandom', deck=deck, settings=HokmSettings, strategy='random')
@@ -275,37 +363,34 @@ def HokmMCTS(memory, hand, possible_cards, n_mcts_sims = 1):
         p2 = HokmPlayer(name='JimmyRandom', deck=deck, settings=HokmSettings, strategy='random')
         p3 = HokmPlayer(name='MathewRandom', deck=deck, settings=HokmSettings, strategy='random')
 
+        # set the hokm from memory to the new table
+        hokm = memory['hokm']
+
         # instantiate a new hokm table
         hokm_table = HokmTable(p0, p1, p2, p3,
                                deck=deck,
-                               settings=HokmSettings)
-
-        # set the hokm from memory to the new table
-
-
-        # add the on_table cards on the table
-
-        # update the turn
-
-        # update the table
-
-        # update anything else you think is necessary, like players' scores
-
-        # play that specific round the player is about to decide
-
-        # randomly select a card from possible_cards
-        # selected_card = np.random.choice(possible_cards)
-        # idx = possible_cards.index(selected_card)
+                               hokm=hokm,
+                               turn=turn,
+                               settings=HokmSettings,
+                               logger=logger)
+        hokm_table.mcts_initialize(hand)
 
         # then similar to what happend in run.py
 
         # while not hokm_table.game_over():
-
-            # play rounds
-
-        # if the player is winner, then add 1 to the probabilities
-        # probabilities[idx] += 1
+        # play rounds
+        if hokm_table.mcts_play_one_round(on_table, idx, n_round=1):
+            probabilities[idx] += 1
 
     # find the card with highest probability of winning and return it
+    return possible_cards[np.argmax(probabilities)]
 
-    return np.random.choice(possible_cards)
+    # update anything else you think is necessary, like players' scores
+
+    # play that specific round the player is about to decide
+
+    # if the player is winner, then add 1 to the probabilities
+    # probabilities[idx] += 1
+
+    # return np.random.choice(possible_cards)
+

@@ -75,7 +75,7 @@ class HokmPlayer(Player):
     def play_card(self, on_table, mcts_model = None):
 
         possible_cards, is_finished = possible_actions(self.hand, on_table, self.hokm)
-        self.logger.info(f'{self.name}: possible_cards: {possible_cards}');
+        #self.logger.info(f'{self.name}: possible_cards: {possible_cards}');
         # print(f'possible_cards: {possible_cards}');
 
         if self.strategy == 'random':
@@ -83,7 +83,7 @@ class HokmPlayer(Player):
 
         elif self.strategy == 'MCTS':
             print ("HERE1---->", len(self.hand))
-            selected_card = mcts_model(self.memory_to_dict(), self.hand, possible_cards)
+            selected_card = mcts_model(self.memory_to_dict(), self.hand,on_table, possible_cards)
 
         elif self.strategy == 'DQN':
             raise NotImplementedError("DQN is not implemented yet")
@@ -91,19 +91,9 @@ class HokmPlayer(Player):
         else:
             raise ValueError("player.strategy MUST be random, MCTS, or DQN, but it's not"
                              "Check for typo")
-
-        ##TODO: please update the possible_actions to be compatible with your algorithm
-        ##BUG: in your code, when there is no card on the table, is_finished is True
-        ##but is_finished is a message that will be used if and only if the plays "cut"
-        ##please consider this in the code
-        ## if it's finished, please clean the code and remove unnecessary lines
-
-
-
         # remove selected card from hand
         self.hand.remove(selected_card)
         return selected_card, is_finished
-
 
 def possible_actions(hand, table, hokm):
     # finding possible actions
@@ -114,18 +104,12 @@ def possible_actions(hand, table, hokm):
         # Table is empty and all cards in hand is possible to play
         return hand, False
     else:
-        # This player should respect the Global Hokm and/or Round Hokm
         # find the ground card
         ground_card = table[0].type
-        for card in hand:
-            if card.type == ground_card:
-                possible_cards.append(card)
-        if len(possible_cards) == 0:
-            for card in hand:
-                if card.type == hokm:
-                    possible_cards.append(card)
-        if len(possible_cards) == 0:
-            possible_cards = hand
+
         # See whether we have the card or not
-        # possible_cards = [card for card in hand if ground_card == card.type]
-        return possible_cards, len(possible_cards) == 0
+        possible_cards = [card for card in hand if card.type == ground_card]
+        if len(possible_cards) == 0:
+            return hand, True
+        else:
+            return possible_cards, False
