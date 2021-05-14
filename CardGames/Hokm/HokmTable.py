@@ -1,5 +1,7 @@
 # Loading dependencies
 import numpy as np
+from copy import deepcopy
+
 from ..Deck import Deck
 from ..GamesSettings import HokmSettings
 from .HokmPlayer import HokmPlayer
@@ -73,7 +75,7 @@ class HokmTable:
                 tmp_cards = self.deck.draw_cards(len(hand))
             self.players[next_player].add_cards_to_hand(tmp_cards)
             next_player = (next_player + 1) % self.settings.n_players
-            
+
         return
 
     def _analyze_round(self, table_cards):
@@ -303,37 +305,39 @@ def HokmMCTS(memory, hand, on_table, possible_cards, n_mcts_sims = 1000):
     # logger = Logger()
     probabilities = np.zeros(len(possible_cards))
 
+    # Create a deck
+    deck = Deck()
+
+    to_be_removed = []
+    tblcnt = 0
+    for card in deck.all_cards:
+
+        if memory[card.type + str(card.number)] != 'unk':
+            to_be_removed.append(card)
+        if memory[card.type + str(card.number)].find("tb") >= 0:
+            tblcnt = tblcnt + 1;
+
+        # update the turn
+        turn = tblcnt % 4;
+
+    # only keep the unknown cards from the memroy in the deck and remove the rest of them
+    deck.remove_cards(to_be_removed)
+    # randomly select a card from possible_cards
+    selected_card = np.random.choice(possible_cards)
+    idx = possible_cards.index(selected_card)
+
+    # instantiate the players with the deck and make them all play randomly (strategy = "random")
+    p0 = HokmPlayer(name='AlexRandom', deck=deck, settings=HokmSettings, strategy='random')
+    p1 = HokmPlayer(name='RyanRandom', deck=deck, settings=HokmSettings, strategy='random')
+    p2 = HokmPlayer(name='JimmyRandom', deck=deck, settings=HokmSettings, strategy='random')
+    p3 = HokmPlayer(name='MathewRandom', deck=deck, settings=HokmSettings, strategy='random')
+
+    # set the hokm from memory to the new table
+    hokm = memory['hokm']
+
     for j in range(n_mcts_sims):
 
-        # Create a deck
-        deck = Deck()
-
-        to_be_removed = []
-        tblcnt = 0
-        for card in deck.all_cards:
-
-            if memory[card.type + str(card.number)] != 'unk':
-                to_be_removed.append(card)
-            if memory[card.type + str(card.number)].find("tb") >= 0:
-                tblcnt = tblcnt + 1;
-
-            # update the turn
-            turn = tblcnt % 4;
-
-        # only keep the unknown cards from the memroy in the deck and remove the rest of them
-        deck.remove_cards(to_be_removed)
-        # randomly select a card from possible_cards
-        selected_card = np.random.choice(possible_cards)
-        idx = possible_cards.index(selected_card)
-
-        # instantiate the players with the deck and make them all play randomly (strategy = "random")
-        p0 = HokmPlayer(name='AlexRandom', deck=deck, settings=HokmSettings, strategy='random')
-        p1 = HokmPlayer(name='RyanRandom', deck=deck, settings=HokmSettings, strategy='random')
-        p2 = HokmPlayer(name='JimmyRandom', deck=deck, settings=HokmSettings, strategy='random')
-        p3 = HokmPlayer(name='MathewRandom', deck=deck, settings=HokmSettings, strategy='random')
-
-        # set the hokm from memory to the new table
-        hokm = memory['hokm']
+        temp_deck = deepcopy(deck)
 
         # instantiate a new hokm table
         hokm_table = HokmTable(p0, p1, p2, p3,
@@ -342,9 +346,8 @@ def HokmMCTS(memory, hand, on_table, possible_cards, n_mcts_sims = 1000):
                                turn=turn,
                                settings=HokmSettings,
                                logger=None)
-        hokm_table.mcts_initialize(hand)
 
-        # then similar to what happend in run.py
+        hokm_table.mcts_initialize(hand)
 
         # while not hokm_table.game_over():
         # play rounds
@@ -353,13 +356,3 @@ def HokmMCTS(memory, hand, on_table, possible_cards, n_mcts_sims = 1000):
 
     # find the card with highest probability of winning and return it
     return possible_cards[np.argmax(probabilities)]
-
-    # update anything else you think is necessary, like players' scores
-
-    # play that specific round the player is about to decide
-
-    # if the player is winner, then add 1 to the probabilities
-    # probabilities[idx] += 1
-
-    # return np.random.choice(possible_cards)
-
