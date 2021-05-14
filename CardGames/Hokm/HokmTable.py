@@ -63,6 +63,7 @@ class HokmTable:
     def mcts_initialize(self, hand):
         self.players[self.turn].add_cards_to_hand(hand)
         self._update_hokm_knowledge(self.hokm)  # new knowledge
+        
         # Finding next player index
         next_player = (self.turn + 1) % self.settings.n_players
         while not next_player == self.turn:
@@ -72,7 +73,7 @@ class HokmTable:
                 tmp_cards = self.deck.draw_cards(len(hand))
             self.players[next_player].add_cards_to_hand(tmp_cards)
             next_player = (next_player + 1) % self.settings.n_players
-        # self.logger.info(f'{tmp_cards} are added to player {next_player} hand')
+            
         return
 
     def _analyze_round(self, table_cards):
@@ -99,7 +100,11 @@ class HokmTable:
                 highest_card = card
 
         # Finding winner's index
-        winner = table_cards[highest_card][1]
+        try:
+            winner = table_cards[highest_card][1]
+        except:
+            print (table_cards)
+            input()
         other_winner = (winner + 2) % self.settings.n_players
 
         if self.players[winner].my_score == int(self.players[winner].deck.n_cards / 8):
@@ -115,7 +120,7 @@ class HokmTable:
                 rewards[i] = (r, True)
             else:
                 rewards[i] = (l, False)
-        self.logger.info(f'player.rewards: {rewards}')
+        # self.logger.info(f'player.rewards: {rewards}')
         return winner, rewards
 
     def _select_cards(self, n):
@@ -238,8 +243,8 @@ class HokmTable:
         would change the performance of the model
         My initial guess: Play till the last card
         '''
-        if self.players[0].scores == HokmSettings.SCORE_TO_WIN or \
-                self.players[1].scores == HokmSettings.SCORE_TO_WIN:
+        if self.players[0].my_score == HokmSettings.SCORE_TO_WIN or \
+                self.players[1].my_score == HokmSettings.SCORE_TO_WIN:
             return True
         elif len(self.players[0].hand) > 0:
             return False
@@ -248,32 +253,19 @@ class HokmTable:
 
     def mcts_play_one_round(self, on_table, idx, n_round=1):
         # initialize meta state action rewards dict
-        round_s_a_r = {}
-        for i in range(self.settings.n_players):
-            round_s_a_r[i] = {}
         table = []
         # add the on_table cards on the table
         for card in on_table:
             table.append(card)
 
         played_cards = {}  # key: player, value: card
-        # played_cards = {}  # key: player, value: card
         i = self.hakem
         for card in table:
             played_cards[card] = (i, i % self.settings.n_players)
             i = i + 1
-        # key: card, value( i = the i th played card, turn = by global player number)
 
-        # self.logger.info(f'Episode:{self.episode}. It is {self.turn} turn to start the round {n_round}')
         for i in range(self.settings.n_players - len(table)):
             turn = (self.turn + i) % self.settings.n_players
-            self.logger.info(f'Table: {table}')
-            self.logger.info(self.players[turn].get_hand())
-            # update the player's knowledge based on the cards on the table
-            if i > 0:
-                self.players[turn].update_cards_state(table, card_states_on_table(table))
-            # getting the state of the player before playing the game
-            round_s_a_r[turn]['state'] = self.players[turn].memory_to_dict()
 
             if (self.turn == turn):
                 action = self.players[turn].hand[idx]
@@ -281,35 +273,15 @@ class HokmTable:
             else:
                 action, is_finished = self.players[turn].play_card(table, mcts_model=HokmMCTS)
 
-            # when a player runs out of a card
-            if is_finished:
-                self._update_finished_card_knowledge(turn, table[0].type)
-            # getting the action of the player
-            round_s_a_r[turn][i] = action
-            # logging the action
-            # self.logger.info(f'Player {turn} action is: {action} is_finish: {is_finished}')
-            # self.logger.info(f'It is {self.turn} turn to start the round {n_round}')
-
             # updating the table
             table.append(action)
-            played_cards[action] = (
-                i, turn)  # key: card, value( i = the i th played card, turn = by global player number)
 
-            self.logger.info(f'------------------------------------------------')
-
-        # updating the knowledge of player of played cards
-        self._update_played_card_knowledge(played_cards)
+            # key: card, value( i = the i th played card, turn = by global player number)
+            played_cards[action] = (i, turn)
 
         round_winner, rewards = self._analyze_round(played_cards)
 
-        for i in range(self.settings.n_players):
-            # reward[i][1] this is True of False, whether he has won or not
-            self.players[i].update_score(rewards[i][1])
-            round_s_a_r[i]['reward'] = rewards[i][0]
-
-        self._update_players_memory(round_s_a_r, n_round)
         return (self.turn == round_winner)
-
 
 def card_states_on_table(table):
     """
@@ -322,17 +294,14 @@ def card_states_on_table(table):
         table) > 0 else []
 
 
-def HokmMCTS(memory, hand, on_table, possible_cards, n_mcts_sims=10):
+def HokmMCTS(memory, hand, on_table, possible_cards, n_mcts_sims = 1000):
     # n_mcts_sims -> the number of play to decide but select card randomly
     ''' Monte Carlo Tree Search for Hokm
 
     ##TODO: Complete this code
     '''
-    logger = Logger()
+    # logger = Logger()
     probabilities = np.zeros(len(possible_cards))
-
-    print(memory)
-    # input()
 
     for j in range(n_mcts_sims):
 
@@ -372,7 +341,7 @@ def HokmMCTS(memory, hand, on_table, possible_cards, n_mcts_sims=10):
                                hokm=hokm,
                                turn=turn,
                                settings=HokmSettings,
-                               logger=logger)
+                               logger=None)
         hokm_table.mcts_initialize(hand)
 
         # then similar to what happend in run.py

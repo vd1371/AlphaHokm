@@ -1,4 +1,5 @@
 # loading dependencies
+import time
 from CardGames.utils import Logger
 from CardGames.GamesSettings import HokmSettings
 from CardGames.Hokm.HokmTable import HokmTable
@@ -11,7 +12,7 @@ def test():
 
     p0_total: int = 0
     p1_total: int = 0
-    while (p0_total < 7) and (p1_total < 7):
+    while (p0_total < 3) and (p1_total < 3):
         deck = Deck()
 
         p0 = HokmPlayer(name='Alex', deck=deck, settings=HokmSettings, strategy='random', logger = logger)
@@ -29,8 +30,11 @@ def test():
         n_round: int = 0
         p0_sum: int = 0
         p1_sum: int = 0
+
+        start = time.time()
         while not hokm_table.game_over():
             n_round += 1
+            print ("Round--------->", n_round)
             hokm_table.logger.info(f'\nRound {n_round} Starts \n')  # logging the player
             hokm_table.play_one_round(n_round=n_round)
             p0_sum = hokm_table.players[0].my_score
@@ -40,6 +44,9 @@ def test():
 
             # print (p0_sum, p1_sum)
             # winner = 0 if p0_sum >= p1_sum else 1
+
+        print ("########--------", time.time()-start)
+
         if p0_sum > p1_sum:
             p0_total += 1
         else:
@@ -51,13 +58,13 @@ def test():
         hokm_table.logger.info(
             f"\n{p0.name} and {p2.name} Wins the Game with Total Score = {p0_total} to {p1_total}\n")
         # logging the player
-        # print(f"\n{p0.name} and {p2.name} Wins the Game with Total Score = {P0_total} to {P1_total}\n")
+        print(f"\n{p0.name} and {p2.name} Wins the Game with Total Score = {p0_total} to {p1_total}\n")
         # logging the player
     else:
         hokm_table.logger.info(
             f"\n{p1.name} and {p3.name} Wins the Game with Total Score = {p1_total} to {p0_total}\n")
         # logging the player
-        # print(f"\n{p1.name} and {p3.name} Wins the Game with Total Score = {P1_total} to {P0_total}\n")
+        print(f"\n{p1.name} and {p3.name} Wins the Game with Total Score = {p1_total} to {p0_total}\n")
         # logging the player
 
 

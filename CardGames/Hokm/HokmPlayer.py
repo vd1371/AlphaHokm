@@ -82,7 +82,7 @@ class HokmPlayer(Player):
             selected_card = np.random.choice(possible_cards)
 
         elif self.strategy == 'MCTS':
-            print ("HERE1---->", len(self.hand))
+            # print ("HERE1---->", len(self.hand))
             selected_card = mcts_model(self.memory_to_dict(), self.hand,on_table, possible_cards)
 
         elif self.strategy == 'DQN':
