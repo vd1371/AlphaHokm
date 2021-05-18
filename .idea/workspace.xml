@@ -2,9 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="5ab3be22-f5ce-42c5-aba1-16f2f21961af" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/.name" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.name" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CardGames/Hokm/HokmPlayer.py" beforeDir="false" afterPath="$PROJECT_DIR$/CardGames/Hokm/HokmPlayer.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/CardGames/Hokm/HokmTable.py" beforeDir="false" afterPath="$PROJECT_DIR$/CardGames/Hokm/HokmTable.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
