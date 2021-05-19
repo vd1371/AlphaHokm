@@ -62,6 +62,9 @@ class Player:
         self.hand += new_hand
         self.update_cards_state(new_hand, [self.game_settings.IN_HAND for _ in range(len(new_hand))])
 
+    def remove_from_hand(self, card):
+        pass
+
     def remember(self, s_a_r, round_):
         '''Remembring the state_action_reward of all rounds'''
         self.memory[round_] = s_a_r

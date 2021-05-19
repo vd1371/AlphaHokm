@@ -51,7 +51,7 @@ class HokmPlayer(Player):
         '''To update the player memory of cards state'''
         for card, state in zip(cards, new_states):
             # self.memory_cards_state[card] = state   ### Ava
-            self.memory_cards_state[card.type + str(card.number)] = state
+            self.memory_cards_state[card.__str__()] = state
 
     def select_hokm(self):
         """
@@ -72,9 +72,9 @@ class HokmPlayer(Player):
     def empty_hand(self):
         return len(self.hand) == 0
 
-    def play_card(self, on_table, mcts_model = None):
+    def play_card(self, table, mcts_model = None):
 
-        possible_cards, is_finished = possible_actions(self.hand, on_table, self.hokm)
+        possible_cards, is_finished = possible_actions(self.hand, table, self.hokm)
         #self.logger.info(f'{self.name}: possible_cards: {possible_cards}');
         # print(f'possible_cards: {possible_cards}');
 
@@ -83,7 +83,10 @@ class HokmPlayer(Player):
 
         elif self.strategy == 'MCTS':
             # print ("HERE1---->", len(self.hand))
-            selected_card = mcts_model(self.memory_to_dict(), self.hand,on_table, possible_cards)
+            selected_card = mcts_model(self.memory_to_dict(),
+                                        self.hand,
+                                        table,
+                                        possible_cards)
 
         elif self.strategy == 'DQN':
             raise NotImplementedError("DQN is not implemented yet")
