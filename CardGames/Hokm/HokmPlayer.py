@@ -72,7 +72,7 @@ class HokmPlayer(Player):
     def empty_hand(self):
         return len(self.hand) == 0
 
-    def play_card(self, table, mcts_model = None):
+    def play_card(self, table, played_cards = None, mcts_model = None):
 
         possible_cards, is_finished = possible_actions(self.hand, table, self.hokm)
         #self.logger.info(f'{self.name}: possible_cards: {possible_cards}');
@@ -86,6 +86,7 @@ class HokmPlayer(Player):
             selected_card = mcts_model(self.memory_to_dict(),
                                         self.hand,
                                         table,
+                                        played_cards,
                                         possible_cards)
 
         elif self.strategy == 'DQN':
