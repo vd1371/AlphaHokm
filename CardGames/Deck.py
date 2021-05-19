@@ -13,6 +13,13 @@ class Card:
     def __repr__(self):
         return self.type + str(self.number)
 
+    def __hash__(self):
+        return hash((self.type, self.number))
+
+    def __eq__(self, other):
+        if self.type == other.type and self.number == other.number:
+            return True
+        return False
 
 class Deck:
     def __init__(self, **params):
