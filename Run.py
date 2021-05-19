@@ -1,5 +1,6 @@
 # loading dependencies
 import time
+import logging
 from CardGames.utils import Logger
 from CardGames.GamesSettings import HokmSettings
 from CardGames.Hokm.HokmTable import HokmTable
@@ -8,11 +9,12 @@ from CardGames.Deck import Deck
 
 
 def test():
-    logger = Logger()
+    logger = Logger(level=logging.WARNING)
 
     p0_total: int = 0
     p1_total: int = 0
-    while (p0_total < 3) and (p1_total < 3):
+    hakem = 0
+    while (p0_total < 100) and (p1_total < 100):
         deck = Deck()
 
         p0 = HokmPlayer(name='Alex', deck=deck, settings=HokmSettings, strategy='random', logger = logger)
@@ -22,7 +24,7 @@ def test():
 
         hokm_table = HokmTable(p0, p1, p2, p3,
                                deck=deck,
-                               hakem=0,
+                               hakem=hakem,
                                settings=HokmSettings,
                                logger=logger)
         hokm_table.initialize()
@@ -51,8 +53,15 @@ def test():
             p0_total += 1
         else:
             p1_total += 1
-        hokm_table.logger.info(
+        hokm_table.logger.critical(
             f"\n P0_total= {p0_total} , P1_total = {p1_total}\n")  # logging the player
+
+        if (p0.my_score > p0.other_score and hakem in [1, 3]) or \
+                (p1.my_score > p1.other_score and hakem in [0, 2]):
+            
+            hakem = (hakem + 1) %4
+
+        # input()
 
     if p0_total > p1_total:
         hokm_table.logger.info(

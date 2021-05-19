@@ -45,7 +45,7 @@ class HokmTable:
 		# Select hokm out of the five variable
 		self.hokm = self.players[self.hakem].select_hokm()
 		self._update_hokm_knowledge(self.hokm)  # new knowledge
-		# self.logger.info(f'{self.hokm} is chosen as hokm')
+		self.logger.info(f'{self.hokm} is chosen as hokm by {self.turn}')
 
 		# Finding next player index
 		next_player = (self.turn + 1) % self.settings.n_players
@@ -141,12 +141,15 @@ class HokmTable:
 		table = []
 		played_cards = {}  # key: player, value: card
 
+
+		self.logger.info(f'It is {self.turn} turn to start the round {n_round}')
+
 		# self.logger.info(f'Episode:{self.episode}. It is {self.turn} turn to start the round {n_round}')
 		for i in range(self.settings.n_players):
 			turn = (self.turn + i) % self.settings.n_players
 
-			# self.logger.info(f'Table: {table}')
-			# self.logger.info(self.players[turn].get_hand())
+			self.logger.info(f'Table: {table}')
+			self.logger.info(self.players[turn].get_hand())
 
 			# update the player's knowledge based on the cards on the table
 			if i > 0:
@@ -163,9 +166,10 @@ class HokmTable:
 				self._update_finished_card_knowledge(turn, table[0].type)
 			# getting the action of the player
 			round_s_a_r[turn][i] = action
+			
 			# logging the action
-			# self.logger.info(f'Player {turn} action is: {action} is_finish: {is_finished}')
-			# self.logger.info(f'It is {self.turn} turn to start the round {n_round}')
+			self.logger.info(f'Player {turn} action is: {action} is_finish: {is_finished}')
+
 
 			# updating the table
 			table.append(action)
@@ -173,7 +177,7 @@ class HokmTable:
 			# key: card, value( i = the i th played card, turn = by global player number)
 			played_cards[action] = (i, turn)
 
-			# self.logger.info(f'------------------------------------------------')
+			self.logger.info(f'------------------------------------------------')
 
 		# updating the knowledge of player of played cards
 		self._update_played_card_knowledge(played_cards)
@@ -188,11 +192,11 @@ class HokmTable:
 		self._update_players_memory(round_s_a_r, n_round)
 		
 		self.turn = round_winner
-		# self.logger.info(f'The winner is global player {round_winner}. The played cards were {played_cards}')
+		self.logger.info(f'The winner is global player {round_winner}. The played cards were {played_cards}')
 		# self.logger.debug(f'\nPlayers knowledge at round {n_round}, episode {self.episode}:\n' + game_status(self.players, table))
-		# self.logger.info(f'------------------------------------------------')
-		# self.logger.info(f'Table: {table}')
-		# self.logger.info(f'------------------------------------------------')
+		self.logger.info(f'------------------------------------------------')
+		self.logger.info(f'Table: {table}')
+		self.logger.info(f'------------------------------------------------')
 		return round_winner
 
 	def game_over(self):

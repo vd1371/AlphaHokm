@@ -75,7 +75,9 @@ class HokmPlayer(Player):
     def play_card(self, table, played_cards = None, mcts_model = None):
 
         possible_cards, is_finished = possible_actions(self.hand, table, self.hokm)
-        #self.logger.info(f'{self.name}: possible_cards: {possible_cards}');
+        
+        if not "Random" in self.name:
+            self.logger.info(f'{self.name}: possible_cards: {possible_cards}')
         # print(f'possible_cards: {possible_cards}');
 
         if self.strategy == 'random':
@@ -87,7 +89,8 @@ class HokmPlayer(Player):
                                         self.hand,
                                         table,
                                         played_cards,
-                                        possible_cards)
+                                        possible_cards,
+                                        self.logger)
 
         elif self.strategy == 'DQN':
             raise NotImplementedError("DQN is not implemented yet")
