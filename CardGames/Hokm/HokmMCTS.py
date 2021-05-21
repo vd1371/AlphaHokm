@@ -120,7 +120,7 @@ def HokmMCTS(memory, hand, table, played_cards, possible_cards, logger):
 
 	# This is derived for finding the number of mcts
 	n_round = int(13 - memory['my_score'] - memory['other_score'])
-	n_mcts_sims = (n_round - 1) * 100
+	n_mcts_sims = int((n_round - 1) * 100)
 
 	# If there is only one option, just return that card
 	if len(possible_cards) == 1:
@@ -137,54 +137,50 @@ def HokmMCTS(memory, hand, table, played_cards, possible_cards, logger):
 
 		# update the turn
 		org_turn = len(table)
+		n_round = int(memory['my_score'] + memory['other_score'])
 
 		# only keep the unknown cards from the memroy in the deck and remove the rest of them
 		deck.remove_cards(to_be_removed)
 
-		for j in range(n_mcts_sims):
+		for idx, selected_card in enumerate(possible_cards):
 
-			n_round = int(memory['my_score'] + memory['other_score'])
-			# instantiate the players with the deck and make them all play randomly (strategy = "random")
-			p0 = HokmPlayer(name='AlexRandom', deck=deck, settings=HokmSettings, strategy='random', logger = logger)
-			p1 = HokmPlayer(name='RyanRandom', deck=deck, settings=HokmSettings, strategy='random', logger = logger)
-			p2 = HokmPlayer(name='JimmyRandom', deck=deck, settings=HokmSettings, strategy='random', logger = logger)
-			p3 = HokmPlayer(name='MathewRandom', deck=deck, settings=HokmSettings, strategy='random', logger = logger)
+			for j in range(n_mcts_sims):
 
-			# randomly select a card from possible_cards
-			selected_card = np.random.choice(possible_cards)
-			idx = possible_cards.index(selected_card)
-			used[idx] += 1
+				# instantiate the players with the deck and make them all play randomly (strategy = "random")
+				p0 = HokmPlayer(name='AlexRandom', deck=deck, settings=HokmSettings, strategy='random', logger = logger)
+				p1 = HokmPlayer(name='RyanRandom', deck=deck, settings=HokmSettings, strategy='random', logger = logger)
+				p2 = HokmPlayer(name='JimmyRandom', deck=deck, settings=HokmSettings, strategy='random', logger = logger)
+				p3 = HokmPlayer(name='MathewRandom', deck=deck, settings=HokmSettings, strategy='random', logger = logger)
 
-			temp_hand = deepcopy(hand)
-			temp_table = deepcopy(table)
-			temp_deck = deepcopy(deck)
-			temp_deck.shuffle()
+				temp_hand = deepcopy(hand)
+				temp_table = deepcopy(table)
+				temp_deck = deepcopy(deck)
+				temp_deck.shuffle()
 
-			# instantiate a new hokm table
-			hokm_table = HokmTableForMCTS(p0, p1, p2, p3,
-								   deck=temp_deck,
-								   hokm=memory['hokm'],
-								   turn=org_turn,
-								   settings=HokmSettings)
+				# instantiate a new hokm table
+				hokm_table = HokmTableForMCTS(p0, p1, p2, p3,
+									   deck=temp_deck,
+									   hokm=memory['hokm'],
+									   turn=org_turn,
+									   settings=HokmSettings)
 
-			hokm_table.mcts_initialize(temp_hand)
+				hokm_table.mcts_initialize(temp_hand)
 
-			# play rounds
-			temp_round_winner, temp_rewards = hokm_table.mcts_play_one_round(table = temp_table,
-																			 action = selected_card,
-																			 played_cards = played_cards,
-																			 n_round = n_round)
-			while not hokm_table.game_over():
-				n_round += 1
-				temp_round_winner = hokm_table.mcts_play_one_round(n_round = n_round)
+				# play rounds
+				temp_round_winner, temp_rewards = hokm_table.mcts_play_one_round(table = temp_table,
+																				 action = selected_card,
+																				 played_cards = played_cards,
+																				 n_round = n_round)
+				while not hokm_table.game_over():
+					n_round += 1
+					temp_round_winner = hokm_table.mcts_play_one_round(n_round = n_round)
 
 
-			if hokm_table.players[org_turn].my_score > \
-					hokm_table.players[org_turn].other_score:
-				wins[idx] += 1
+				if hokm_table.players[org_turn].my_score > \
+						hokm_table.players[org_turn].other_score:
+					wins[idx] += 1
 
 		# find the card with highest probability of winning and return it
-		logger.info(f"nums {used}")
-		logger.info(f"probs {wins/used}")
+		logger.info(f"wins {wins}")
 
-		return possible_cards[np.argmax(wins/used)]
+		return possible_cards[np.argmax(wins)]
