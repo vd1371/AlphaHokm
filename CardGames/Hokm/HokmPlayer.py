@@ -24,22 +24,26 @@ class HokmPlayer(Player):
     def memory_to_dict(self):
         out_dict = {}
         out_dict['hokm'] = self.hokm
-        out_dict['my_score'] = self.my_score / (int(self.deck.n_cards / 8) + 1)
-        out_dict['other_score'] = self.other_score / (int(self.deck.n_cards / 8) + 1)
+       # out_dict['my_score'] = self.my_score / (int(self.deck.n_cards / 8) + 1)
+       # out_dict['other_score'] = self.other_score / (int(self.deck.n_cards / 8) + 1)
+        out_dict['my_score']=self.my_score
+        out_dict['other_score']=self.other_score
         out_dict = {**out_dict, **self.memory_finished_cards, **self.memory_cards_state}
         return out_dict
 
     def update_score(self, winner=True):
         if winner:
             self.add_my_score()
-        self.set_other_score(len(self.hand))
+        #Ava
+        else:
+            self.set_other_score(len(self.hand))
 
     def add_my_score(self, score=1):
         self.my_score += score
 
     def set_other_score(self, n_remaining_cards):
-        self.other_score = int(self.deck.n_cards / 4) - n_remaining_cards - self.my_score
-
+        #self.other_score = int(self.deck.n_cards / 4) - n_remaining_cards - self.my_score
+        self.other_score+=1
     def remember_hakem(self, hakem):
         self.memory_of_hakem = hakem
 

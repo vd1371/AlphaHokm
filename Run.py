@@ -14,7 +14,7 @@ def test():
     p0_total: int = 0
     p1_total: int = 0
     hakem = 0
-    while (p0_total < 100) and (p1_total < 100):
+    while (p0_total < 3) and (p1_total < 3):
         deck = Deck()
 
         p0 = HokmPlayer(name='Alex', deck=deck, settings=HokmSettings, strategy='random', logger = logger)

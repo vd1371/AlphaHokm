@@ -150,6 +150,7 @@ def HokmMCTS(memory, hand, table, played_cards, possible_cards, logger):
 			p2 = HokmPlayer(name='JimmyRandom', deck=deck, settings=HokmSettings, strategy='random', logger = logger)
 			p3 = HokmPlayer(name='MathewRandom', deck=deck, settings=HokmSettings, strategy='random', logger = logger)
 
+
 			# randomly select a card from possible_cards
 			selected_card = np.random.choice(possible_cards)
 			idx = possible_cards.index(selected_card)
