@@ -24,10 +24,14 @@ class HokmPlayer(Player):
     def memory_to_dict(self):
         out_dict = {}
         out_dict['hokm'] = self.hokm
+<<<<<<< HEAD
        # out_dict['my_score'] = self.my_score / (int(self.deck.n_cards / 8) + 1)
        # out_dict['other_score'] = self.other_score / (int(self.deck.n_cards / 8) + 1)
         out_dict['my_score']=self.my_score
         out_dict['other_score']=self.other_score
+
+        out_dict['my_score'] = self.my_score
+        out_dict['other_score'] = self.other_score
         out_dict = {**out_dict, **self.memory_finished_cards, **self.memory_cards_state}
         return out_dict
 
@@ -44,6 +48,10 @@ class HokmPlayer(Player):
     def set_other_score(self, n_remaining_cards):
         #self.other_score = int(self.deck.n_cards / 4) - n_remaining_cards - self.my_score
         self.other_score+=1
+
+    def set_other_score(self, n_hand):
+        self.other_score = int(self.deck.n_cards / 4) - n_hand - self.my_score
+
     def remember_hakem(self, hakem):
         self.memory_of_hakem = hakem
 

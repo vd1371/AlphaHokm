@@ -47,7 +47,7 @@ def test():
             # print (p0_sum, p1_sum)
             # winner = 0 if p0_sum >= p1_sum else 1
 
-        print ("########--------", time.time()-start)
+        print (f"########--------{time.time()-start:.2f}")
 
         if p0_sum > p1_sum:
             p0_total += 1
