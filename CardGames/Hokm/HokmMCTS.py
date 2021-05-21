@@ -146,19 +146,11 @@ def HokmMCTS(memory, hand, table, played_cards, possible_cards, logger):
 
 			for j in range(n_mcts_sims):
 
-<<<<<<< HEAD
-
-			# randomly select a card from possible_cards
-			selected_card = np.random.choice(possible_cards)
-			idx = possible_cards.index(selected_card)
-			used[idx] += 1
-
 				# instantiate the players with the deck and make them all play randomly (strategy = "random")
 				p0 = HokmPlayer(name='AlexRandom', deck=deck, settings=HokmSettings, strategy='random', logger = logger)
 				p1 = HokmPlayer(name='RyanRandom', deck=deck, settings=HokmSettings, strategy='random', logger = logger)
 				p2 = HokmPlayer(name='JimmyRandom', deck=deck, settings=HokmSettings, strategy='random', logger = logger)
 				p3 = HokmPlayer(name='MathewRandom', deck=deck, settings=HokmSettings, strategy='random', logger = logger)
-
 
 				temp_hand = deepcopy(hand)
 				temp_table = deepcopy(table)
