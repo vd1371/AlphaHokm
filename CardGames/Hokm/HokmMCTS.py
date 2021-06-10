@@ -120,7 +120,7 @@ def HokmMCTS(memory, hand, table, played_cards, possible_cards, logger):
 
 	# This is derived for finding the number of mcts
 	n_round = int(13 - memory['my_score'] - memory['other_score'])
-	n_mcts_sims = int((n_round - 1) * 100)
+	n_mcts_sims = int((n_round - 1) * 1000)
 
 	# If there is only one option, just return that card
 	if len(possible_cards) == 1:
