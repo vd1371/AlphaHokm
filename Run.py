@@ -61,8 +61,6 @@ def test():
             
             hakem = (hakem + 1) %4
 
-        # input()
-
     if p0_total > p1_total:
         hokm_table.logger.info(
             f"\n{p0.name} and {p2.name} Wins the Game with Total Score = {p0_total} to {p1_total}\n")
